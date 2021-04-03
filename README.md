@@ -16,7 +16,7 @@ Done:
  * Started extracted the logic from the [todopage.razor](https://github.com/riesvriend/Stl.Fusion.PageStateService/blob/master/samples/Blazorise/UI/Pages/TodoPage.razor), making it a render-only component
 
  Issues and Todos:
- 1. The state behaves as *ServiceLifetime.Transient* and is reset after each request, even though it is marked as *ServiceLifetime.Scoped* [here](https://github.com/riesvriend/Stl.Fusion.PageStateService/blob/21fb94ccf5fd39b6bfe361217607a1dc9b630922/samples/Blazorise/UI/Services/TodoPageStateService.cs#L24) as per [MS Docs](https://docs.microsoft.com/en-us/aspnet/core/blazor/state-management?view=aspnetcore-5.0&pivots=webassembly). Due to this bug the PageSize state is lost on every request and loading more pages does not work.
+ 1. The state in TodoPageStateService behaves as *ServiceLifetime.Transient* and is reset after each request, even though the service is marked as *ServiceLifetime.Scoped* [here](https://github.com/riesvriend/Stl.Fusion.PageStateService/blob/21fb94ccf5fd39b6bfe361217607a1dc9b630922/samples/Blazorise/UI/Services/TodoPageStateService.cs#L24) as per [MS Docs](https://docs.microsoft.com/en-us/aspnet/core/blazor/state-management?view=aspnetcore-5.0&pivots=webassembly). Due to this bug the state (including current PageSize) is lost on every request and hence loading more pages does not work.
  2. Finish extracting all logic and commands in todopage.razor and todoitem.razor
  2. Testers still to be implemented.
  

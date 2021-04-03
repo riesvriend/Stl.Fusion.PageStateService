@@ -31,12 +31,7 @@ namespace Templates.Blazor2.UI.Services
         public TodoPageStateService(ITodoService todoService)
         {
             _todoService = todoService;
-
-            _state = new TodoPageState(
-                Items: Array.Empty<Todo>(),
-                new PageRef<string>(Count: 5),
-                HasMore: false,
-                LastStateUpdateTimeUtc: DateTime.UtcNow);
+            _state = new TodoPageState();
 
             Debug.WriteLine($"TodoPageStateService recreated. This should only happen once per session/circuit...");
         }
@@ -47,8 +42,8 @@ namespace Templates.Blazor2.UI.Services
         public virtual async Task<TodoPageState> Get(Session session, CancellationToken cancellationToken = default)
         {
             var currentPageSize = _state.PageRef.Count;
-            var getOneMorePagePlusOne = _state.PageRef with { Count = currentPageSize + 1 };
-            var items = await _todoService.List(session, getOneMorePagePlusOne, cancellationToken);
+            var currentItemsPlusOne = _state.PageRef with { Count = currentPageSize + 1 };
+            var items = await _todoService.List(session, currentItemsPlusOne, cancellationToken);
             var hasMore = items.Length > currentPageSize;
             if (hasMore)
                 items = items[0..currentPageSize];
