@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Stl.CommandR\Stl.CommandR.csproj" />
     <ProjectReference Include="..\..\..\src\Stl.Fusion.Blazor\Stl.Fusion.Blazor.csproj" />
     <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
   </ItemGroup>
