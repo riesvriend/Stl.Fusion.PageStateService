@@ -7,14 +7,13 @@
 @inject CommandRunner CommandRunner
 @inject AuthStateProvider AuthStateProvider
 
-@{
+@{ Debug.WriteLine($"Rendering TodoPage. ConsistencyState: {State.Computed.ConsistencyState}");
     var error = State.Error;
-    var model = State.UnsafeValue ?? new();
-}
+    var model = State.UnsafeValue ?? new(); }
 
 <h1>Todo List</h1>
 
-<StatefulComponentState Component="@this" />
+<StateOfStateBadge State="@State" />
 <Text Margin="Margin.Is1.OnY">
     Updated: <b><MomentsAgoBadge Value="model.LastStateUpdateTime" /></b>
 </Text>
@@ -24,40 +23,20 @@
         <SignInDropdown Why="to use this page" />
     </NotAuthorized>
     <Authorized>
-        <!--
-        This comment is here solely to reset the indent in VS / Rider -->
-
         <WhenException Exception="error" />
         <WhenCommandError Exception="CommandRunner.Error" />
-
         <Row>
             <Column ColumnSize="ColumnSize.Is6.OnDesktop.Is12.OnTablet">
                 @foreach (var todoModel in model.Items)
                 {
                     var todo = todoModel.Todo;
-                    <Addons Margin="Margin.Is3.OnY">
-                        <Addon AddonType="AddonType.Start">
-                            <AddonLabel>
-                                <Blazorise.Icon Name="@(todo.IsDone ? FontAwesomeIcons.CheckSquare : FontAwesomeIcons.Square)"
-                                                @onclick="_ => InvertDone(todo)" />
-                            </AddonLabel>
-                        </Addon>
-                        <TextEdit TextChanged="text => UpdateTitle(todo, text)" ChangeTextOnKeyPress="false"
-                                  Text="@todo.Title" />
-                        <Addon AddonType="AddonType.End">
-                            <Button Clicked="_ => Remove(todo)" Color="Color.Warning">
-                                <Blazorise.Icon Name="FontAwesomeIcons.Minus" />
-                            </Button>
-                        </Addon>
-                    </Addons>
-                }
+<TodoItem @key="@todo.Id" Value="@todo" />}
 
                 @if (model.HasMore)
                 {
-                    <Button Clicked="_ => LoadMore()" Color="Color.Primary" Margin="Margin.Is3.OnY">
-                        Load more <Blazorise.Icon Name="FontAwesomeIcons.AngleDoubleDown" />
-                    </Button>
-                }
+<Button Clicked="_ => LoadMore()" Color="Color.Primary" Margin="Margin.Is3.OnY">
+    Load more <Blazorise.Icon Name="FontAwesomeIcons.AngleDoubleDown" />
+</Button>}
 
                 <Form @onsubmit="_ => Create()" Margin="Margin.Is3.OnY">
                     <Addons>
@@ -78,9 +57,7 @@
     </Authorized>
 </AuthorizeView>
 
-
-@code {
-    // AuthState property below seemingly does nothing, right?
+@code { // AuthState property below seemingly does nothing, right?
     // But try to comment out this line & sign-in + sign-out. See the error badge stays there for a while now?
     // Check your explanation on our Discord: https://discord.gg/EKEwv6d
     [CascadingParameter] protected Task<AuthState> AuthState { get; set; } = null!;
@@ -90,7 +67,6 @@
     protected override void OnInitialized()
     {
         CommandRunner.Component = this;
-        StateHasChangedTriggers = StateEventKind.All;
         base.OnInitialized();
     }
 
@@ -111,29 +87,9 @@
         return TodoUI.LoadMore(Session);
     }
 
-    private Task InvertDone(Todo todo)
-    {
-        todo = todo with { IsDone = !todo.IsDone };
-        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
-    }
-
-    private Task UpdateTitle(Todo todo, string title)
-    {
-        title = title.Trim();
-        if (todo.Title == title)
-            return Task.CompletedTask;
-        todo = todo with { Title = title };
-        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
-    }
-
-    private Task Remove(Todo todo)
-        => CommandRunner.Call(new RemoveTodoCommand(Session, todo.Id));
-
     private Task Create()
     {
         var todo = new Todo("", NewTodoTitle);
         NewTodoTitle = "";
-        StateHasChanged();
         return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
-    }
-}
+    } }

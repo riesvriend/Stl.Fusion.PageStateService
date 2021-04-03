@@ -9,14 +9,14 @@
     <EntityFrameworkCoreVersion>5.0.4</EntityFrameworkCoreVersion>
     <AspNetCoreVersion>5.0.4</AspNetCoreVersion>
     <AspNetCoreVersion3>3.*</AspNetCoreVersion3>
-    <BlazorVersion>5.0.3</BlazorVersion>
+    <BlazorVersion>5.0.4</BlazorVersion>
     <BlazoriseVersion>0.9.*</BlazoriseVersion>
     <SystemNetHttpJsonVersion>5.0.3</SystemNetHttpJsonVersion>
     <StlFusionVersion>0.*</StlFusionVersion>
   </PropertyGroup>
 
   <ItemGroup Label="Nupkg Versions">
-    <PackageReference Update="AspNet.Security.OAuth.GitHub" Version="5.0.2" />
+    <PackageReference Update="AspNet.Security.OAuth.GitHub" Version="5.0.3" />
     <PackageReference Update="Blazorise" Version="$(BlazoriseVersion)" />
     <PackageReference Update="Blazorise.Bootstrap" Version="$(BlazoriseVersion)" />
     <PackageReference Update="Blazorise.DataGrid" Version="$(BlazoriseVersion)" />
