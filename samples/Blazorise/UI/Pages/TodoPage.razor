@@ -1,7 +1,7 @@
 @page "/todo"
 @using System.Threading
 @using Stl.CommandR;
-@inherits LiveComponentBase<TodoPageState>
+@inherits LiveComponentBase<TodoPageStateResponse>
 @inject ITodoService Todos
 @inject ITodoPageStateService PageStateService
 @inject Session Session
@@ -10,8 +10,8 @@
 
 @{
     Debug.WriteLine($"Rendering TodoPage. ConsistencyState: {State.Computed.ConsistencyState}");
- var error = State.Error;
- var state = State.UnsafeValue ?? new(); // UnsafeValue returns default if there is an Error
+    var error = State.Error;
+    var state = State.UnsafeValue ?? new(); // UnsafeValue returns default if there is an Error
 }
 
 <h1>Todo List</h1>
@@ -20,6 +20,10 @@
 <Text Margin="Margin.Is1.OnY">
     Updated: <b><MomentsAgoBadge Value="state.LastStateUpdateTimeUtc" /></b>
 </Text>
+
+<SimpleTodoList />
+
+<SimpleTodoList />
 
 <AuthorizeView>
     <NotAuthorized>
@@ -30,12 +34,12 @@
         <WhenCommandError Exception="CommandRunner.Error" />
         <Row>
             <Column ColumnSize="ColumnSize.Is6.OnDesktop.Is12.OnTablet">
-                @foreach (var todo in state.Items)
+                @foreach (var todo in state.List1.Items)
                 {
                     <TodoItem @key="@todo.Id" Value="@todo" />
                 }
 
-                @if (state.HasMore)
+                @if (state.List1.HasMore)
                 {
                     <Button Clicked="_ => LoadMore()" Color="Color.Primary" Margin="Margin.Is3.OnY">
                         Load more <Blazorise.Icon Name="FontAwesomeIcons.AngleDoubleDown" />
@@ -65,7 +69,7 @@
     // Check your explanation on our Discord: https://discord.gg/EKEwv6d
     [CascadingParameter] protected Task<AuthState> AuthState { get; set; } = null!;
 
-    protected override async Task<TodoPageState> ComputeState(CancellationToken cancellationToken)
+    protected override async Task<TodoPageStateResponse> ComputeState(CancellationToken cancellationToken)
     {
         var state = await PageStateService.Get(Session, cancellationToken);
         return state;
@@ -73,7 +77,8 @@
 
     private Task LoadMore()
     {
-        return Call(new LoadMoreCommand(Session));
+        //return Call(new LoadMoreCommand(Path: State.Value.List1.Request, Session));
+        return Task.CompletedTask;
     }
 
     private Task Create()

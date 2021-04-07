@@ -26,12 +26,14 @@ namespace Templates.Blazor2.UI.Services
     {
         private readonly ITodoService _todoService;
 
-        private TodoPageState _state;
+        private static TodoPageStateResponse _state = null!;
 
         public TodoPageStateService(ITodoService todoService)
         {
             _todoService = todoService;
-            _state = new TodoPageState();
+
+            if (_state == null)
+                _state = new TodoPageStateResponse();
 
             Debug.WriteLine($"TodoPageStateService recreated. This should only happen once per session/circuit...");
         }
@@ -39,20 +41,32 @@ namespace Templates.Blazor2.UI.Services
         /// <summary>
         /// Returns newly computed state
         /// </summary>
-        public virtual async Task<TodoPageState> Get(Session session, CancellationToken cancellationToken = default)
+        public virtual async Task<TodoListStateResponse> GetTodoList(
+            TodoListStateRequest request, Session session, CancellationToken cancellationToken = default)
         {
-            var currentPageSize = _state.PageRef.Count;
-            var currentItemsPlusOne = _state.PageRef with { Count = currentPageSize + 1 };
+            var pageRef = request.PageRef;
+            var currentPageSize = pageRef.Count;
+            var currentItemsPlusOne = pageRef with { Count = currentPageSize + 1 };
+            // todo: implement filtering
             var items = await _todoService.List(session, currentItemsPlusOne, cancellationToken);
             var hasMore = items.Length > currentPageSize;
-            if (hasMore)
+            var nextPageRef = pageRef;
+            if (hasMore) {
                 items = items[0..currentPageSize];
-            _state = _state with { Items = items, HasMore = hasMore, LastStateUpdateTimeUtc = DateTime.UtcNow };
-            return _state;
+            }
+            if (items.Length > 0)
+                nextPageRef = pageRef with { AfterKey = items[items.Length].Id };
+
+            var response = new TodoListStateResponse(
+                Request: request with { PageRef = nextPageRef },
+                Items: items,
+                HasMore: hasMore);
+            
+            return response;
         }
 
         /// <summary>
-        /// Updates the state and requeries
+        /// Fetches more records in a todo-list
         /// </summary>
         public virtual Task LoadMore(LoadMoreCommand command, CancellationToken cancellationToken = default)
         {
@@ -62,12 +76,22 @@ namespace Templates.Blazor2.UI.Services
                 Get(session, cancellationToken: default).Ignore();
                 return Task.CompletedTask;
             }
-            
+
             // For now Get() will ingore the next record marker and always fetch a single page from the start
             // so we just increase the page size and refetch it entirely.
-            _state = _state with { PageRef = _state.PageRef with { Count = _state.PageRef.Count * 2 } };
+
+            // _state = _state with { PageRef = _state.PageRef with { Count = _state.PageRef.Count * 2 } };
 
             return Task.CompletedTask;
         }
+
+        public virtual async Task<TodoPageStateResponse> Get(Session session, CancellationToken cancellationToken = default)
+        {
+            var list1 = await GetTodoList(_state.List1.Request, session, cancellationToken);
+            var list2 = await GetTodoList(_state.List2.Request, session, cancellationToken);
+            var response = new TodoPageStateResponse(list1, list2, LastStateUpdateTimeUtc: DateTime.UtcNow);
+            return response;
+        }
+
     }
 }

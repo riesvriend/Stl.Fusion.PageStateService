@@ -12,41 +12,39 @@ using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
 using Stl.Text;
 
-namespace Templates.Blazor2.Abstractions
+namespace Templates.Blazor2.UI.Services
 {
-	/// <summary>
-	/// Live state for the todopage.razor
-	/// </summary>
-	public interface ITodoPageStateService
-	{
-		// Queries
-		[ComputeMethod]
-		Task<TodoPageState> Get(Session session, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Live state for the todopage.razor
+    /// </summary>
+    public interface ITodoPageStateService
+    {
+        // Queries
+        [ComputeMethod]
+        Task<TodoPageStateResponse> Get(Session session, CancellationToken cancellationToken = default);
 
-		[CommandHandler]
-		Task LoadMore(LoadMoreCommand command, CancellationToken cancellationToken = default);
-	}
+        [ComputeMethod]
+        Task<TodoListStateResponse> GetTodoList(TodoListStateRequest request, Session session, CancellationToken cancellationToken = default);
 
-	public record LoadMoreCommand(Session Session) : ISessionCommand<Unit>
-	{
-		public LoadMoreCommand() : this(Session.Null) { }
-	}
+        [CommandHandler]
+        Task LoadMore(LoadMoreCommand command, CancellationToken cancellationToken = default);
+    }
 
-	/// <summary>
-	/// Immutable for optimized razor re-rendering
-	/// </summary>
-	public record TodoPageState(
-		// The currently visible todo items
-		Todo[] Items,
-		// The next record marker and page size
-		PageRef<string> PageRef,
-		// If a next record is available
-		bool HasMore,
-		// The last fetch timestamp
-		DateTime LastStateUpdateTimeUtc)
-	{
-		public TodoPageState() 
-			: this(Items: Array.Empty<Todo>(), PageRef: 5, HasMore: false,
-				  LastStateUpdateTimeUtc: new DateTime(1999, 12, 31)) { }
-	}
+    public record LoadMoreCommand(string Path, Session Session) : ISessionCommand<Unit>
+    {
+        public LoadMoreCommand() : this(Path: "",  Session.Null) { }
+    }
+
+    /// <summary>
+    /// Immutable for optimized razor re-rendering
+    /// </summary>
+    public record TodoPageStateResponse(
+        TodoListStateResponse List1,
+        TodoListStateResponse List2,
+        // The last fetch timestamp
+        DateTime LastStateUpdateTimeUtc)
+    {
+        public TodoPageStateResponse()
+            : this(List1: new TodoListStateResponse(), List2: new TodoListStateResponse(), LastStateUpdateTimeUtc: new DateTime(1999, 12, 31)) { }
+    }
 }
